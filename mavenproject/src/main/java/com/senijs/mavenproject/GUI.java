@@ -21,8 +21,8 @@ public class GUI {
     public final Connection conn;
 
     public GUI() {
-    	conn = createConnection();
-        stmt = createStatement();
+    	conn = createConnection(); //note try-with-resource
+        stmt = createStatement(); //note useless.
 
         JFrame frame = new JFrame("Tvestor");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -33,8 +33,8 @@ public class GUI {
         frame.add(createOperationPanel());
         frame.add(createCompletionPanel());
         frame.add(createStatusPanel());
-        frame.add(dateRangePickerExample("finished"));
-        frame.add(dateRangePickerExample("cost"));
+        frame.add(dateRangePickerPanel("finished"));
+        frame.add(dateRangePickerPanel("cost"));
         frame.setVisible(true);
     }
     
@@ -115,10 +115,10 @@ public class GUI {
         
 		stmt.executeQuery(
 				"INSERT INTO \"PUBLIC\".\"Task\" (\"DESCRIPTION\", \"COST\", \"STATUS\", \"FINISHED\") "
-				+ " VALUES ('" + description + "', 0.0, 'Project', LOCALTIME);"
+				+ " VALUES ('" + description + "', 0.0, 'Project', LOCALTIME);" //note set as parameter using PreparedStatement
 		);
 		
-		ResultSet resultSet = stmt.executeQuery(
+		ResultSet resultSet = stmt.executeQuery(//note try-with-resource
 			    "SELECT TASK_ID " +
 			    "FROM \"PUBLIC\".\"Task\" " +
 			    "ORDER BY TASK_ID DESC " +
@@ -293,7 +293,7 @@ public class GUI {
     }
 
     public double calculateCombinedCost(int taskID) throws SQLException {
-        String query = "SELECT COST FROM \"PUBLIC\".\"Operation\" WHERE TASK_ID = ?";
+        String query = "SELECT COST FROM \"PUBLIC\".\"Operation\" WHERE TASK_ID = ?";//note "select sum(cost) from operation where task_id = ?"
         double combinedCost = 0.0;
 
         try (PreparedStatement statement = conn.prepareStatement(query)) {
@@ -309,7 +309,7 @@ public class GUI {
     }
 
     public String calculateNewStatus(int taskID) throws SQLException {
-        String newStatus = "Project";
+        String newStatus = "Project"; //note enum or constant
 
         try {
             ResultSet resultSet = stmt.executeQuery(
@@ -321,19 +321,19 @@ public class GUI {
 
             while (resultSet.next()) {
                 String status = resultSet.getString("STATUS");
-                if ("Project".equals(status)) {
+                if ("Project".equals(status)) { //note enum or constant
                     hasProjectStatus = true;
-                } else if ("Finished".equals(status)) {
+                } else if ("Finished".equals(status)) { //note enum or constant
                     hasFinishedStatus = true;
                 }
             }
 
             if (hasProjectStatus && hasFinishedStatus) {
-                newStatus = "In-Progress";
+                newStatus = "In-Progress"; //note enum or constant
             } else if (hasProjectStatus) {
-                newStatus = "Project";
+                newStatus = "Project"; //note enum or constant
             } else if (hasFinishedStatus) {
-                newStatus = "Finished";
+                newStatus = "Finished"; //note enum or constant
             }
 
             System.out.println("Task status updated successfully: " + newStatus);
@@ -359,7 +359,7 @@ public class GUI {
     public int retrieveNewOperationID() throws SQLException {
         String query = "SELECT OPERATION_ID FROM \"PUBLIC\".\"Operation\" ORDER BY OPERATION_ID DESC LIMIT 1";
         try (Statement statement = conn.createStatement()) {
-            ResultSet resultSet = statement.executeQuery(query);
+            ResultSet resultSet = statement.executeQuery(query);//note try-with-resource
             int newOperationID = -1;
 
             if (resultSet.next()) {
@@ -429,9 +429,9 @@ public class GUI {
         int taskID = 0;
         double operationPrice = 0.0;
         
-        ResultSet resultSet = stmt.executeQuery(
+        ResultSet resultSet = stmt.executeQuery( //note try-with-resource
                 "SELECT * FROM \"PUBLIC\".\"Operation\" "
-                + "WHERE OPERATION_ID = " + operationID);
+                + "WHERE OPERATION_ID = " + operationID); //note set as parameter using PreparedStatement
         
         if (resultSet.next()) {
         	taskID = resultSet.getInt("TASK_ID");
@@ -473,7 +473,7 @@ public class GUI {
         showStatusButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    String statusToFilter = "Project";              
+                    String statusToFilter = "Project";//note ?
                     List<String> records = fetchRecordsByStatus(statusToFilter);
                     statusTextArea.setText(String.join("\n", records));
                     
@@ -510,7 +510,7 @@ public class GUI {
     
         
 
-    public JPanel dateRangePickerExample(String finishedOrCost) {
+    public JPanel dateRangePickerPanel(String finishedOrCost) {
     	JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new FlowLayout());
         mainPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -574,15 +574,15 @@ public class GUI {
         		case "finished":{
                     String query = "SELECT * FROM \"PUBLIC\".\"Task\" WHERE \"STATUS\" = ? AND \"FINISHED\" BETWEEN ? AND ?";
                     try (PreparedStatement preparedStatement = conn.prepareStatement(query)) {
-                        preparedStatement.setString(1, "Project");
+                        preparedStatement.setString(1, "Finished");//note ?
                     	preparedStatement.setString(2, fromDateString);
                     	preparedStatement.setString(3, toDateString);
-                        ResultSet resultSet = preparedStatement.executeQuery();
+                        ResultSet resultSet = preparedStatement.executeQuery(); //note try-with-resource
                         while (resultSet.next()) {
                             String record = "ID: " + resultSet.getInt("TASK_ID") + 
                             				", Description: " + resultSet.getString("DESCRIPTION") +
                             				", Cost: " + resultSet.getDouble("COST") +
-                            				", Status: " + resultSet.getString("FINISHED");
+                            				", Status: " + resultSet.getString("STATUS");
                             records.add(record);
                         }
 
@@ -598,7 +598,7 @@ public class GUI {
                         preparedStatement.setString(1, "Project");
                     	preparedStatement.setString(2, fromDateString);
                     	preparedStatement.setString(3, toDateString);
-                        ResultSet resultSet = preparedStatement.executeQuery();
+                        ResultSet resultSet = preparedStatement.executeQuery(); //note try-with-resource
                         double cost = 0.0;
                         while (resultSet.next()) {
                         	cost += resultSet.getDouble("COST");
