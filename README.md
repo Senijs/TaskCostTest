@@ -1,4 +1,4 @@
-	<h3 align="center"> The Tvestor DataBase management application </h3>
+	<h3 align="center">The Tvestor DataBase management application</h3>
 
 <p> Before running this application, you must set up the database: </p>
 1. Open a terminal in the ../database folder
