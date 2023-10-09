@@ -1,6 +1,6 @@
-<h3 align="center">The Tvestor DataBase management application</h3>
+<h1 align="center">The Tvestor DataBase management application</h1>
 
-<p>Before running this application, you must set up the database:</p>
+<h3>Before running this application, you must set up the database:</h3>
 <p>1. Open a terminal in the ../database folder</p>
 <p>2. In the terminal execute the following command "java -cp hsqldb.jar org.hsqldb.Server --database test"</p>
 
