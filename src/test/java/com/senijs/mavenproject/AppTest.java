@@ -43,13 +43,6 @@ public class AppTest {
     }
 
     @Test
-    public void testCreateStatement() {
-        // Test that a valid statement is created
-        Statement stmt = gui.createStatement();
-        assertNotNull("Statement should not be null", stmt);
-    }
-
-    @Test
     public void testTaskExists() throws SQLException {
         // Assuming there is a task in database with ID 1
         int existingTaskID = 1;
